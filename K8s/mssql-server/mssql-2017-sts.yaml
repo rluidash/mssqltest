@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mssql-secrets
+type: Opaque
+data:
+  sa-password: cGFzc3dvcmQxMjM=  # Base64 encoded 'Password123'
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mssql-server-statefulset
+  labels:
+    app: mssql-server
+spec:
+  serviceName: "mssql-server"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mssql-server
+  template:
+    metadata:
+      labels:
+        app: mssql-server
+    spec:
+      containers:
+      - name: mssql-server
+        image: rluiarch/custom-mssqlserver-2017:1.0.2  # Custom image from Docker Hub
+        ports:
+        - containerPort: 1433
+          name: mssql
+        env:
+        - name: ACCEPT_EULA
+          value: "Y"
+        - name: SA_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mssql-secrets
+              key: sa-password  # Reference to the Kubernetes secret for SA password
+        volumeMounts:
+        - name: mssql-data
+          mountPath: /var/opt/mssql  # Default path for SQL Server data storage
+        resources:
+          requests:
+            memory: "4Gi"    # Minimum memory required for SQL Server
+            cpu: "2"         # Minimum of 2 CPUs guaranteed
+          limits:
+            memory: "4Gi"    # Maximum memory SQL Server can use
+            cpu: "2"         # Maximum of 2 CPUs it can use
+  volumeClaimTemplates:
+  - metadata:
+      name: mssql-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: gp2  # AWS EBS storage class
+      resources:
+        requests:
+          storage: 10Gi  # Size of the Persistent Volume
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mssql-server  # This is the default service name
+  labels:
+    app: mssql-server
+spec:
+  ports:
+  - port: 1433
+    targetPort: 1433
+    protocol: TCP
+  selector:
+    app: mssql-server
+  clusterIP: None  # Headless service for StatefulSet

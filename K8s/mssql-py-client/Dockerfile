@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y \
     iputils-ping \
     vim \
     locales \
+    telnet \
     && rm -rf /var/lib/apt/lists/*
 # Set Python 3.8 as default
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
@@ -41,6 +42,9 @@ RUN /bin/bash -c "source ~/.bashrc"
 
 # Install pip for Python 3.8
 RUN python3.8 -m pip install --upgrade pip
+RUN pip install "splunk-opentelemetry[all]"
+RUN splunk-py-trace-bootstrap
+
 RUN mkdir -p /app
 # Copy requirements for Python dependencies
 COPY requirements.txt .

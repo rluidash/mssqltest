@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mssql-java-client
+  labels:
+    app: mssql-java-client
+spec:
+  replicas: 1  # You can increase this if you want more replicas
+  selector:
+    matchLabels:
+      app: mssql-java-client
+  template:
+    metadata:
+      labels:
+        app: mssql-java-client
+    spec:
+      containers:
+      - name: mssql-java-client
+        image: rluiarch/mssql-java-client:1.0.3  # Use the image name you built for the Java app
+        env:
+        - name: SERVER  # Environment variable for MS SQL Server
+          value: "mssql-server.mssqltest.svc.cluster.local"  # Fully qualified domain name (FQDN) of the headless service
+        - name: DATABASE  # Database name
+          value: "AdventureWorks"
+        - name: USERNAME  # Username for the SQL Server
+          value: "SA"
+        - name: PASSWORD  # Password for the SQL Server
+          value: "password123"  # In production, store this securely using Kubernetes Secrets
+        ports:
+        - containerPort: 8080  # Optional: You can expose a port if needed for HTTP health checks, metrics, etc.
+        resources:
+          limits:
+            memory: "1024Mi"
+            cpu: "1000m"
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          tcpSocket:
+            port: 8080  # Optional: Set this to a port where your Java app may expose health checks
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          tcpSocket:
+            port: 8080  # Optional: Same port for readiness
+          initialDelaySeconds: 60
+          periodSeconds: 30
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mssql-server
+spec:
+  selector:
+    app: mssql-server
+  ports:
+  - protocol: TCP
+    port: 1433
+    targetPort: 1433
+  type: ClusterIP

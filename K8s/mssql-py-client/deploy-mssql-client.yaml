@@ -17,7 +17,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: mssql-python-container
-        image: rluiarch/custom-mssql-tools:1.0.5  # Replace this with your image name
+        image: rluiarch/custom-mssql-tools:latest  # Replace this with your image name
         env:
         - name: MSSQL_endpoint
           value: "mssql-server"  # Kubernetes service name for MSSQL

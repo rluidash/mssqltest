@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mssql-csharp-client
+  labels:
+    app: mssql-csharp-client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mssql-csharp-client
+  template:
+    metadata:
+      labels:
+        app: mssql-csharp-client
+    spec:
+      containers:
+      - name: mssql-csharp-client
+        image: rluiarch/mssql-c-sharp-client:1.0.0  # Use the image name for the C# app
+        env:
+        - name: SERVER  # Environment variable for MS SQL Server
+          value: "mssql-server.mssqltest.svc.cluster.local"
+        - name: DATABASE  # Database name
+          value: "AdventureWorks"
+        - name: USERNAME  # Username for SQL Server
+          value: "SA"
+        - name: PASSWORD  # Password for SQL Server
+          value: "password123"
+        ports:
+        - containerPort: 8080
+        resources:
+          limits:
+            memory: "1024Mi"
+            cpu: "1000m"
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mssql-server
+spec:
+  selector:
+    app: mssql-server
+  ports:
+  - protocol: TCP
+    port: 1433
+    targetPort: 1433
+  type: ClusterIP

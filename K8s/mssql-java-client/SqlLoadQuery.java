@@ -76,7 +76,7 @@ public class SqlLoadQuery {
                 runQueries(statement);
                 logMessage("Query set executed successfully for the " + cycleCount + " time. Waiting for 1 minute...");
                 cycleCount++;
-                TimeUnit.MINUTES.sleep(1);  // Sleep for 1 minute
+                TimeUnit.SECONDS.sleep(1);  // Sleep for 1 minute
             }
         } catch (Exception e) {
             logMessage("Error occurred while connecting or querying SQL Server: " + e.getMessage());

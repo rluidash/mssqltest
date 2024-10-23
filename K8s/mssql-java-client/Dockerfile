@@ -22,5 +22,6 @@ COPY SqlLoadQuery.java .
 # Compile the Java application
 RUN javac SqlLoadQuery.java
 
+ADD 'https://dtdg.co/latest-java-tracer' dd-java-agent.jar
 # Run the Java application
 CMD ["java", "-cp", "/opt/mssql-jdbc.jar:.", "SqlLoadQuery"]

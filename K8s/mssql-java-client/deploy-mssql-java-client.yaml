@@ -16,7 +16,8 @@ spec:
     spec:
       containers:
       - name: mssql-java-client
-        image: rluiarch/mssql-java-client:1.0.3  # Use the image name you built for the Java app
+        image: cvifli/mssql-java-client  # Use the image name you built for the Java app
+        imagePullPolicy: Always
         env:
         - name: SERVER  # Environment variable for MS SQL Server
           value: "mssql-server.mssqltest.svc.cluster.local"  # Fully qualified domain name (FQDN) of the headless service
@@ -26,6 +27,32 @@ spec:
           value: "SA"
         - name: PASSWORD  # Password for the SQL Server
           value: "password123"  # In production, store this securely using Kubernetes Secrets
+        - name: DD_ENV
+          value: lab
+        - name: DD_SERVICE
+          value: "java-demo"
+        - name: DD_TRACE_SAMPLE_RATE
+          value: "1.0"
+        - name: DD_VERSION
+          value: "1.0"
+        - name: JDK_JAVA_OPTIONS
+          value: "-javaagent:/app/dd-java-agent.jar -javaagent:/app/splunk-otel-javaagent.jar"
+        - name: DD_AGENT_HOST
+          value: datadog.datadog
+        - name: DD_TRACE_AGENT_PORT
+          value: "8126"
+        - name: DD_TRACE_DEBUG
+          value: "true"
+        - name: DD_DBM_PROPAGATION_MODE
+          value: "full"
+        - name: DD_INTEGRATION_JDBC_DATASOURCE_ENABLED
+          value: "true"
+        - name: OTEL_SERVICE_NAME
+          value: "java-demo"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: http://splunk-otel-collector-agent.splunk:4318
+        - name: OTEL_RESOURCE_ATTRIBUTES
+          value: deployment.environment=lab,service.version=1.0
         ports:
         - containerPort: 8080  # Optional: You can expose a port if needed for HTTP health checks, metrics, etc.
         resources:

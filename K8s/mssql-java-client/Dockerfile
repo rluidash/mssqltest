@@ -22,5 +22,7 @@ COPY SqlLoadQuery.java .
 # Compile the Java application
 RUN javac SqlLoadQuery.java
 
+ADD 'https://dtdg.co/latest-java-tracer' dd-java-agent.jar
+ADD 'https://github.com/signalfx/splunk-otel-java/releases/latest/download/splunk-otel-javaagent.jar' splunk-otel-javaagent.jar
 # Run the Java application
 CMD ["java", "-cp", "/opt/mssql-jdbc.jar:.", "SqlLoadQuery"]

@@ -8,6 +8,7 @@
   <ItemGroup>
     <!-- Add System.Data.SqlClient to fix the missing SQL classes -->
     <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
-    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <!-- Use FrameworkReference for ASP.NET Core -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 </Project>

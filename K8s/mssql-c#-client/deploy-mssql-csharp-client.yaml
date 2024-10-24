@@ -16,18 +16,23 @@ spec:
     spec:
       containers:
       - name: mssql-csharp-client
-        image: rluiarch/mssql-c-sharp-client:1.0.0  # Use the image name for the C# app
+        image: rluiarch/mssql-c-sharp-client:2.0.0  # Use the image name for the C# app
         env:
         - name: SERVER  # Environment variable for MS SQL Server
           value: "mssql-server.mssqltest.svc.cluster.local"
         - name: DATABASE  # Database name
           value: "AdventureWorks"
         - name: USERNAME  # Username for SQL Server
-          value: "SA"
+          value: "charlie"
         - name: PASSWORD  # Password for SQL Server
-          value: "password123"
+          value: "password123!"
+        - name: SPLUNK_OTEL_AGENT
+          value: "splunk-otel-collector-agent.splunk.svc.cluster.local"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "http://$(SPLUNK_OTEL_AGENT):4317"
+
         ports:
-        - containerPort: 8080
+        - containerPort: 80  # Expose port 80
         resources:
           limits:
             memory: "1024Mi"
@@ -38,13 +43,13 @@ spec:
         livenessProbe:
           httpGet:
             path: /health
-            port: 8080
+            port: 80  # Check health on port 80
           initialDelaySeconds: 60
           periodSeconds: 30
         readinessProbe:
           httpGet:
             path: /health
-            port: 8080
+            port: 80  # Check readiness on port 80
           initialDelaySeconds: 60
           periodSeconds: 30
       restartPolicy: Always
@@ -52,12 +57,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: mssql-server
+  name: mssql-csharp-client  # Service name for the C# app
 spec:
   selector:
-    app: mssql-server
+    app: mssql-csharp-client  # This should match the deployment labels
   ports:
   - protocol: TCP
-    port: 1433
-    targetPort: 1433
-  type: ClusterIP
+    port: 80  # Expose port 80
+    targetPort: 80  # Target the container port 80
+  type: ClusterIP  # Internal service type (change to LoadBalancer if you want external access)
